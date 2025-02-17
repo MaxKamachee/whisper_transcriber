@@ -1,5 +1,7 @@
 # --- Backend-specific ignores (whisper_transcriber) ---
 # Compiled artifacts (Mix)
+whisper_transcriber/.venv/
+whisper_transcriber/priv/uploads/
 whisper_transcriber/_build/
 whisper_transcriber/cover/
 whisper_transcriber/deps/
