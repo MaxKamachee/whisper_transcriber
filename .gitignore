@@ -1,0 +1,40 @@
+# --- Backend-specific ignores (whisper_transcriber) ---
+# Compiled artifacts (Mix)
+whisper_transcriber/_build/
+whisper_transcriber/cover/
+whisper_transcriber/deps/
+whisper_transcriber/doc/
+whisper_transcriber/tmp/
+
+# Crash dumps and archives
+whisper_transcriber/erl_crash.dump
+whisper_transcriber/*.ez
+whisper_transcriber/whisper_transcriber-*.tar
+
+# --- Frontend-specific ignores (whisper-frontend) ---
+# Node dependencies and build artifacts
+whisper-frontend/node_modules/
+whisper-frontend/.pnp/
+whisper-frontend/.pnp.js
+whisper-frontend/coverage/
+whisper-frontend/build/
+
+# --- Generic ignores (apply everywhere) ---
+# Ignore any node_modules, build directories, and coverage folders in any subdirectory
+**/node_modules/
+**/build/
+**/coverage/
+
+# OS and editor files
+.DS_Store
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
