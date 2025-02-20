@@ -13,7 +13,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 def transcribe_audio(file_path):
     try:
         # Load the Whisper model with float32 to avoid the float16 warning
-        model = WhisperModel("base", compute_type="float32")
+        model = WhisperModel("tiny", compute_type="float32")
             
         # Directly transcribe the file
         segments, info = model.transcribe(file_path, beam_size=5, language="en")
