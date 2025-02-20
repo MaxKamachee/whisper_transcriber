@@ -1,21 +1,8 @@
 services:
-  # Frontend web service
+  # Backend Elixir Service only for now
   - type: web
-    name: whisper-frontend
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./build
-    envVars:
-      - key: NODE_VERSION
-        value: 18.15.0
-      - key: REACT_APP_API_URL
-        value: https://whisper_transcriber.onrender.com
-
-  # Backend web service
-  - type: web
-    name: whisper_transcriber
+    name: whisper-transcriber
     env: elixir
-    plan: free
     buildCommand: |
       mix local.hex --force
       mix local.rebar --force
@@ -36,5 +23,7 @@ services:
         value: 1.14.5
       - key: PYTHON_VERSION
         value: 3.8.12
+      - key: PORT
+        value: 4000
     healthCheckPath: /health
     autoDeploy: false
