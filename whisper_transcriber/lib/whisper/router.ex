@@ -23,7 +23,7 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   
-  plug CORSPlug, 
+   plug CORSPlug, 
     origin: ["https://whisper-frontend.onrender.com"],
     methods: ["GET", "POST", "OPTIONS"],
     headers: ["Authorization", "Content-Type", "Accept", "Origin"],
@@ -32,6 +32,8 @@ defmodule Whisper.Router do
     max_age: 86400
 
   plug :match
+
+  # Move this BEFORE the match to ensure proper parsing
   plug Plug.Parsers,
     parsers: [:multipart, :json],
     pass: ["*/*"],
@@ -40,21 +42,7 @@ defmodule Whisper.Router do
 
   plug :dispatch
 
-  # Add OPTIONS handlers for all your endpoints
-  options "/upload" do
-    send_resp(conn, 204, "")
-  end
-
-  options "/transcribe" do
-    send_resp(conn, 204, "")
-  end
-
-  options "/status" do
-    send_resp(conn, 204, "")
-  end
-
-
-  # Add a new route for file uploads
+  # Make sure this route is defined correctly
   post "/upload" do
     Logger.info("POST /upload route hit")
     case conn.body_params do
@@ -69,11 +57,14 @@ defmodule Whisper.Router do
         # Save the file
         File.write!(path, File.read!(upload.path))
         
-        # Return the path for transcription
-        send_resp(conn, 200, Jason.encode!(%{path: path}))
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(200, Jason.encode!(%{path: path}))
       
       _ ->
-        send_resp(conn, 400, Jason.encode!(%{error: "No file uploaded"}))
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, Jason.encode!(%{error: "No file uploaded"}))
     end
   end
 

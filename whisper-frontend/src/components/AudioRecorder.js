@@ -44,51 +44,65 @@ const AudioRecorder = () => {
   const sendToServer = async (file) => {
     setIsProcessing(true);
     try {
-      console.log('Attempting to upload to:', `${API_URL}/upload`);
-      
+      console.log('Starting upload process');
       const formData = new FormData();
       formData.append('file', file);
       
+      // First, try a preflight request
+      try {
+        const preflightResponse = await fetch(`${API_URL}/upload`, {
+          method: 'OPTIONS',
+          headers: {
+            'Origin': window.location.origin,
+          }
+        });
+        console.log('Preflight response:', preflightResponse);
+      } catch (error) {
+        console.warn('Preflight request failed:', error);
+      }
+  
+      // Then do the actual upload
       const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
-        credentials: 'include',  // Changed from 'same-origin'
+        credentials: 'include',
         headers: {
           'Accept': 'application/json',
         },
       });
       
       if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+        throw new Error(`Upload failed with status: ${uploadResponse.status}`);
       }
-      
-      const uploadData = await uploadResponse.json();
-      console.log('Upload response:', uploadData);
-      
-      if (!uploadData.path) {
+  
+      const uploadResult = await uploadResponse.json();
+      console.log('Upload successful:', uploadResult);
+  
+      if (!uploadResult.path) {
         throw new Error('No path received from upload');
       }
   
+      // Start transcription
       const transcribeResponse = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
-        credentials: 'include',  // Changed from 'same-origin'
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ path: uploadData.path }),
+        body: JSON.stringify({ path: uploadResult.path }),
       });
   
       if (!transcribeResponse.ok) {
         throw new Error(`Transcription request failed: ${transcribeResponse.status}`);
       }
   
-      const data = await transcribeResponse.json();
+      const transcribeResult = await transcribeResponse.json();
+      console.log('Transcription response:', transcribeResult);
       
-      if (data.status === "processing") {
+      if (transcribeResult.status === "processing") {
         setTranscription("Transcription is being processed...");
-        startPolling(uploadData.path);
+        startPolling(uploadResult.path);
       }
     } catch (error) {
       console.error('Error in sendToServer:', error);
