@@ -1,18 +1,21 @@
 services:
-  - type: web
+  # Static site is always free
+  - type: static
     name: whisper-frontend
-    runtime: static
     rootDir: whisper-frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: build
+    publishDir: build
     envVars:
       - key: REACT_APP_API_URL
         value: https://whisper-backend.onrender.com
 
+  # Free web service
   - type: web
     name: whisper-backend
-    runtime: elixir
     rootDir: whisper_transcriber
+    runtime: elixir
+    region: ohio
+    plan: free
     buildCommand: |
       mix deps.get
       mix compile
