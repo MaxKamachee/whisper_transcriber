@@ -7,6 +7,7 @@ const AudioRecorder = () => {
   const [transcription, setTranscription] = useState('');
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
   const startRecording = async () => {
     try {
@@ -48,7 +49,7 @@ const AudioRecorder = () => {
       formData.append('file', file);
       
       // Save file endpoint (you'll need to implement this)
-      const uploadResponse = await fetch('http://localhost:4000/upload', {
+      const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -56,7 +57,7 @@ const AudioRecorder = () => {
       const { path } = await uploadResponse.json();
 
       // Now send the path to the transcription endpoint
-      const transcribeResponse = await fetch('http://localhost:4000/transcribe', {
+      const transcribeResponse = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +87,7 @@ const AudioRecorder = () => {
     const pollInterval = setInterval(async () => {
       try {
         console.log("Polling attempt", attempts);
-        const response = await fetch(`http://localhost:4000/status?path=${path}`);
+        const response = await fetch(`${API_URL}/status?path=${path}`);
         const data = await response.json();
         console.log("Received status:", data);
         
