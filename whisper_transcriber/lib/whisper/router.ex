@@ -35,7 +35,7 @@ defmodule Whisper.Router do
     length: 100_000_000  # Increase max upload size to 100MB
 
   plug :dispatch
-  
+
   # OPTIONS preflight handler for /upload
   options "/upload" do
     send_resp(conn, 204, "")
@@ -43,6 +43,7 @@ defmodule Whisper.Router do
 
   # Add a new route for file uploads
   post "/upload" do
+    Logger.info("POST /upload route hit")
     case conn.body_params do
       %{"file" => upload} ->
         # Generate unique filename
@@ -114,5 +115,13 @@ defmodule Whisper.Router do
 
   match _ do
     send_resp(conn, 404, "Not found")
+  end
+
+  # Override call/2 to append CORS headers on every response
+  def call(conn, opts) do
+    conn
+    |> super(opts)
+    |> Plug.Conn.put_resp_header("access-control-allow-origin", "https://whisper-frontend.onrender.com")
+    |> Plug.Conn.put_resp_header("access-control-allow-methods", "GET,POST,OPTIONS")
   end
 end
