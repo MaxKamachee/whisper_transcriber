@@ -1,6 +1,6 @@
 services:
   # Static site is always free
-  - type: static
+  - type: static-site
     name: whisper-frontend
     rootDir: whisper-frontend
     buildCommand: npm install && npm run build
