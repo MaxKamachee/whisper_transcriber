@@ -35,8 +35,4 @@ services:
     scaling:
       minInstances: 1
       maxInstances: 1
-    resources:
-      limits:
-        memory: 1024 # Set to 1GB
-      requests:
-        memory: 512 # Request 512MB minimum
+    
