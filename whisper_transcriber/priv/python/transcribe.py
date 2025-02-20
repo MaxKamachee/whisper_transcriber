@@ -19,7 +19,9 @@ def transcribe_audio(file_path):
         model = WhisperModel(
             "tiny",  # Use tiny model instead of base
             device="cpu",
-            compute_type="int8"  # Use int8 quantization
+            compute_type="int8",  # Use int8 quantization
+            cpu_threads=1,
+            num_workers=1
         )
             
         # Transcribe with lower beam size
@@ -28,7 +30,13 @@ def transcribe_audio(file_path):
             beam_size=1,  # Reduced from 5
             language="en",
             condition_on_previous_text=False,
-            no_speech_threshold=0.6
+            temperature=0.0,  # Faster, deterministic decoding
+            no_speech_threshold=0.6,
+            vad_filter=True,  # Enable voice activity detection
+            vad_parameters=dict(
+                min_silence_duration_ms=500,
+                speech_pad_ms=100
+            )
         )
         
         
