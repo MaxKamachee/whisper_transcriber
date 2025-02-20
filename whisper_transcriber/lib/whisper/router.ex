@@ -105,6 +105,11 @@ defmodule Whisper.Router do
     send_resp(conn, 200, "OK")
   end
 
+  options "/upload" do
+    send_resp(conn, 204, "")
+  end
+
+
   match _ do
     send_resp(conn, 404, "Not found")
   end
