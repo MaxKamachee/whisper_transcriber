@@ -23,21 +23,36 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   
-  plug :match
+  plug CORSPlug, 
+    origin: ["https://whisper-frontend.onrender.com"],
+    methods: ["GET", "POST", "OPTIONS"],
+    headers: ["Authorization", "Content-Type", "Accept", "Origin"],
+    expose: ["content-type", "content-length"],
+    credentials: true,
+    max_age: 86400
 
-  # Handle both JSON and multipart form data
+  plug :match
   plug Plug.Parsers,
     parsers: [:multipart, :json],
     pass: ["*/*"],
     json_decoder: Jason,
-    length: 100_000_000  # Increase max upload size to 100MB
+    length: 100_000_000
 
   plug :dispatch
 
-  # OPTIONS preflight handler for /upload
+  # Add OPTIONS handlers for all your endpoints
   options "/upload" do
     send_resp(conn, 204, "")
   end
+
+  options "/transcribe" do
+    send_resp(conn, 204, "")
+  end
+
+  options "/status" do
+    send_resp(conn, 204, "")
+  end
+
 
   # Add a new route for file uploads
   post "/upload" do

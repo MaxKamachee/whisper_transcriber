@@ -13,7 +13,6 @@ services:
     type: web
     runtime: elixir
     rootDir: whisper_transcriber
-    region: ohio
     plan: free
     buildCommand: |
       mix deps.get
@@ -23,7 +22,7 @@ services:
       pip install -r requirements.txt
       mkdir -p priv/uploads
       chmod 777 priv/uploads
-    startCommand: iex -S mix
+    startCommand: mix phx.server
     envVars:
       - key: MIX_ENV
         value: prod

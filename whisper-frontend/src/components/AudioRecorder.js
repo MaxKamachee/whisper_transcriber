@@ -44,42 +44,55 @@ const AudioRecorder = () => {
   const sendToServer = async (file) => {
     setIsProcessing(true);
     try {
-      // First save the file and get its path
+      console.log('Attempting to upload to:', `${API_URL}/upload`);
+      
       const formData = new FormData();
       formData.append('file', file);
       
-      // Save file endpoint (you'll need to implement this)
       const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
-        credentials: 'same-origin',
+        credentials: 'include',  // Changed from 'same-origin'
         headers: {
           'Accept': 'application/json',
         },
       });
       
-      const { path } = await uploadResponse.json();
-
-      // Now send the path to the transcription endpoint
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+      }
+      
+      const uploadData = await uploadResponse.json();
+      console.log('Upload response:', uploadData);
+      
+      if (!uploadData.path) {
+        throw new Error('No path received from upload');
+      }
+  
       const transcribeResponse = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
-        credentials: 'same-origin',
-          headers: {
+        credentials: 'include',  // Changed from 'same-origin'
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ path: uploadData.path }),
       });
-
+  
+      if (!transcribeResponse.ok) {
+        throw new Error(`Transcription request failed: ${transcribeResponse.status}`);
+      }
+  
       const data = await transcribeResponse.json();
       
       if (data.status === "processing") {
         setTranscription("Transcription is being processed...");
-        startPolling(path);
+        startPolling(uploadData.path);
       }
     } catch (error) {
-      console.error('Error:', error);
-      setTranscription('Error processing audio');
+      console.error('Error in sendToServer:', error);
+      setTranscription(`Error: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
