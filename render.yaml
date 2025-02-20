@@ -31,8 +31,5 @@ services:
       - key: PORT
         value: "10000"
     healthCheckPath: /health
-    # Add memory limit and scaling options
-    scaling:
-      minInstances: 1
-      maxInstances: 1
+    
     
