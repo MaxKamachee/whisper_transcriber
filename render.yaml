@@ -1,28 +1,30 @@
 services:
   - type: web
-    name: whisper-transcriber
-    env: elixir
-    instance_type: free
+    name: whisper-frontend
+    runtime: static
+    rootDir: whisper-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://whisper-backend.onrender.com
+
+  - type: web
+    name: whisper-backend
+    runtime: elixir
+    rootDir: whisper_transcriber
     buildCommand: |
-      mix local.hex --force
-      mix local.rebar --force
       mix deps.get
-      # Setup Python environment
-      python3 -m venv .venv
-      source .venv/bin/activate
-      pip install -r requirements.txt
-      # Build Elixir app
       mix compile
+      python3 -m venv .venv
+      . .venv/bin/activate
+      pip install -r requirements.txt
     startCommand: mix phx.server
     envVars:
       - key: MIX_ENV
         value: prod
       - key: SECRET_KEY_BASE
         generateValue: true
-      - key: ELIXIR_VERSION
-        value: 1.14.5
-      - key: PYTHON_VERSION
-        value: 3.8.12
       - key: PORT
         value: 10000
     healthCheckPath: /health
