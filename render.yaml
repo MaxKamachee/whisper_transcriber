@@ -22,7 +22,7 @@ services:
       pip install -r requirements.txt
       mkdir -p priv/uploads
       chmod 777 priv/uploads
-    startCommand: mix phx.server
+    startCommand: iex -S mix
     envVars:
       - key: MIX_ENV
         value: prod
