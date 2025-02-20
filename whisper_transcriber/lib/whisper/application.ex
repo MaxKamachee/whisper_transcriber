@@ -16,8 +16,10 @@ defmodule Whisper.Application do
   use Application
 
   def start(_type, _args) do
+    port = System.get_env("PORT") |> to_integer_default(4000)
+
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Whisper.Router, options: [port: 4000]},
+      {Plug.Cowboy, scheme: :http, plug: Whisper.Router, options: [port: port, ip: {0, 0, 0, 0}]},
       {Whisper.WorkerSupervisor, []},
       {Whisper.TranscriptionCoordinator, []},
       {Registry, keys: :unique, name: Whisper.WorkerRegistry}
@@ -26,4 +28,7 @@ defmodule Whisper.Application do
     opts = [strategy: :one_for_one, name: Whisper.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  defp to_integer_default(nil, default), do: default
+  defp to_integer_default(val, _default), do: String.to_integer(val)
 end
