@@ -21,7 +21,7 @@ services:
       python3 -m venv .venv
       . .venv/bin/activate
       pip install -r requirements.txt
-    startCommand: mix phx.server
+    startCommand: iex -S mix
     envVars:
       - key: MIX_ENV
         value: prod
