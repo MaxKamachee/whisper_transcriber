@@ -1,8 +1,8 @@
 services:
-  # Backend Elixir Service only for now
   - type: web
     name: whisper-transcriber
     env: elixir
+    instance_type: free
     buildCommand: |
       mix local.hex --force
       mix local.rebar --force
@@ -24,6 +24,5 @@ services:
       - key: PYTHON_VERSION
         value: 3.8.12
       - key: PORT
-        value: 4000
+        value: 10000
     healthCheckPath: /health
-    autoDeploy: false
