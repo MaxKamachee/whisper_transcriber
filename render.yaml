@@ -4,7 +4,7 @@ services:
     runtime: static
     rootDir: whisper-frontend
     buildCommand: npm install && npm run build
-    publishDir: build
+    staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
         value: https://whisper-backend.onrender.com
