@@ -27,16 +27,21 @@ def transcribe_audio(file_path):
         # Transcribe with lower beam size
         segments, info = model.transcribe(
             file_path,
-            beam_size=1,  # Reduced from 5
+            beam_size=1,
+            best_of=1,            # Don't generate multiple candidates
             language="en",
             condition_on_previous_text=False,
-            temperature=0.0,  # Faster, deterministic decoding
-            no_speech_threshold=0.6,
-            vad_filter=True,  # Enable voice activity detection
+            temperature=0.0,      # Deterministic, faster decoding
+            no_speech_threshold=0.7,  # More aggressive silence filtering
+            vad_filter=True,
             vad_parameters=dict(
-                min_silence_duration_ms=500,
-                speech_pad_ms=100
-            )
+                min_silence_duration_ms=300,  # Shorter silence detection
+                speech_pad_ms=50,           # Reduced padding
+            ),
+            word_timestamps=False,  # Don't generate word timestamps
+            initial_prompt="Speech to text conversion:",  # Help with context
+            compression_ratio_threshold=2.5,  # More aggressive compression
+            log_prob_threshold=-1.0          # More lenient probability threshold
         )
         
         
