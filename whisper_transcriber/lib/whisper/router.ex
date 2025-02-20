@@ -23,7 +23,7 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   # Add CORS support
-  plug CORSPlug, origin: ["http://localhost:3000"]
+  plug CORSPlug, origin: ["http://localhost:3000", "https://whisper-frontend.onrender.com"]
   
   plug :match
 
