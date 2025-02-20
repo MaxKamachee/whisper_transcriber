@@ -6,17 +6,35 @@ from faster_whisper import WhisperModel
 import os
 import json
 import sys
+import gc
 
 # Add this to resolve the OpenMP library issue
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def transcribe_audio(file_path):
     try:
-        # Load the Whisper model with float32 to avoid the float16 warning
-        model = WhisperModel("tiny", compute_type="float32")
+        # Force garbage collection before starting
+        gc.collect()
+        
+        # Load the Whisper model with compute_type="int8" for lower memory usage
+        model = WhisperModel(
+            "tiny",  # Use tiny model instead of base
+            device="cpu",
+            compute_type="int8"  # Use int8 quantization
+        )
             
-        # Directly transcribe the file
-        segments, info = model.transcribe(file_path, beam_size=5, language="en")
+        # Transcribe with lower beam size
+        segments, info = model.transcribe(
+            file_path,
+            beam_size=1,  # Reduced from 5
+            language="en",
+            condition_on_previous_text=False,
+            no_speech_threshold=0.6
+        )
+        
+        # Clean up model explicitly
+        del model
+        gc.collect()
         
         # Convert segments to list for JSON serialization
         transcription = " ".join(segment.text for segment in segments)

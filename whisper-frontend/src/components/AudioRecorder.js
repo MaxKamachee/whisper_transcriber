@@ -114,24 +114,27 @@ const AudioRecorder = () => {
 
   const startPolling = (path) => {
     let attempts = 0;
-    const maxAttempts = 60; // 30 seconds maximum polling time
+    const maxAttempts = 120;  // Increased max attempts
+    const initialDelay = 500; // Start with 500ms
+    const maxDelay = 3000;    // Max 3s between polls
+    let currentDelay = initialDelay;
+    
     console.log("Starting polling for path:", path);
     
     const pollInterval = setInterval(async () => {
       try {
-        console.log("Polling attempt", attempts);
+        console.log(`Polling attempt ${attempts} (delay: ${currentDelay}ms)`);
         const response = await fetch(`${API_URL}/status?path=${encodeURIComponent(path)}`, {
-          method: 'GET',
-          credentials: 'same-origin',
+          credentials: 'include',
           headers: {
-            'Accept': 'application/json',
-          },
+            'Accept': 'application/json'
+          }
         });
-  
+        
         if (!response.ok) {
-          throw new Error(`Status check failed with status: ${response.status}`);
+          throw new Error(`Status check failed: ${response.status}`);
         }
-  
+        
         const data = await response.json();
         console.log("Received status:", data);
         
@@ -139,20 +142,25 @@ const AudioRecorder = () => {
           setTranscription(data.transcription);
           clearInterval(pollInterval);
         } else if (data.status === "error") {
-          setTranscription("Error: " + data.error);
+          setTranscription(`Error: ${data.error}`);
           clearInterval(pollInterval);
         } else if (attempts >= maxAttempts) {
-          setTranscription("Timeout: Transcription took too long");
+          setTranscription("Timeout: Processing took too long. Please try a shorter recording.");
           clearInterval(pollInterval);
+        } else if (data.status === "processing") {
+          // Increase delay over time to reduce server load
+          currentDelay = Math.min(currentDelay * 1.5, maxDelay);
+          clearInterval(pollInterval);
+          setTimeout(() => startPolling(path), currentDelay);
         }
         
         attempts++;
       } catch (error) {
         console.error('Polling error:', error);
-        setTranscription(`Error: ${error.message || 'Failed to connect to server'}`);
         clearInterval(pollInterval);
+        setTranscription("Error checking transcription status. Please try again.");
       }
-    }, 500); // Poll every half second
+    }, currentDelay);
     
     return () => clearInterval(pollInterval);
   };
