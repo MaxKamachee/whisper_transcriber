@@ -35,6 +35,11 @@ defmodule Whisper.Router do
     length: 100_000_000  # Increase max upload size to 100MB
 
   plug :dispatch
+  
+  # OPTIONS preflight handler for /upload
+  options "/upload" do
+    send_resp(conn, 204, "")
+  end
 
   # Add a new route for file uploads
   post "/upload" do
@@ -105,10 +110,7 @@ defmodule Whisper.Router do
     send_resp(conn, 200, "OK")
   end
 
-  options "/upload" do
-    send_resp(conn, 204, "")
-  end
-
+  
 
   match _ do
     send_resp(conn, 404, "Not found")
