@@ -26,6 +26,7 @@ whisper-frontend/build/
 **/node_modules/
 **/build/
 **/coverage/
+**.env
 
 # OS and editor files
 .DS_Store

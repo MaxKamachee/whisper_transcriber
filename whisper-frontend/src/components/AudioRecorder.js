@@ -52,6 +52,10 @@ const AudioRecorder = () => {
       const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+        },
       });
       
       const { path } = await uploadResponse.json();
@@ -59,8 +63,10 @@ const AudioRecorder = () => {
       // Now send the path to the transcription endpoint
       const transcribeResponse = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
-        headers: {
+        credentials: 'same-origin',
+          headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ path }),
       });
@@ -81,13 +87,24 @@ const AudioRecorder = () => {
 
   const startPolling = (path) => {
     let attempts = 0;
-    const maxAttempts = 60; // 15 seconds maximum polling time
+    const maxAttempts = 60; // 30 seconds maximum polling time
     console.log("Starting polling for path:", path);
     
     const pollInterval = setInterval(async () => {
       try {
         console.log("Polling attempt", attempts);
-        const response = await fetch(`${API_URL}/status?path=${path}`);
+        const response = await fetch(`${API_URL}/status?path=${encodeURIComponent(path)}`, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Status check failed with status: ${response.status}`);
+        }
+  
         const data = await response.json();
         console.log("Received status:", data);
         
@@ -105,12 +122,11 @@ const AudioRecorder = () => {
         attempts++;
       } catch (error) {
         console.error('Polling error:', error);
-        setTranscription("Error connecting to server");
+        setTranscription(`Error: ${error.message || 'Failed to connect to server'}`);
         clearInterval(pollInterval);
       }
     }, 500); // Poll every half second
     
-    // Cleanup the interval if component unmounts
     return () => clearInterval(pollInterval);
   };
 

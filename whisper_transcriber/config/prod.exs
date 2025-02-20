@@ -15,7 +15,10 @@ config :porcelain,
 config :cors_plug,
   origin: ["https://whisper-frontend.onrender.com"],
   methods: ["GET", "POST", "OPTIONS"],
-  headers: ["Content-Type", "Accept", "Origin"]
+  headers: ["Content-Type", "Accept", "Origin"],
+  expose: ["content-type", "content-length"],
+  max_age: 86400,
+  credentials: true
 
 # router.ex modifications
 defmodule Whisper.Router do
