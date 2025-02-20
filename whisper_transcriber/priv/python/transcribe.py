@@ -1,61 +1,67 @@
 """
-Transcribes audio files using the faster-whisper implementation.
+Memory-efficient transcription script optimized for Render free tier.
 """
-
 from faster_whisper import WhisperModel
 import os
 import json
 import sys
-import gc
+from pathlib import Path
 
 # Add this to resolve the OpenMP library issue
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def transcribe_audio(file_path):
     try:
-        # Force garbage collection before starting
-        gc.collect()
-        
-        # Load the Whisper model with compute_type="int8" for lower memory usage
+        # Use the smallest possible model with minimal settings
         model = WhisperModel(
-            "tiny",  # Use tiny model instead of base
+            "tiny",
             device="cpu",
-            compute_type="int8"  # Use int8 quantization
+            compute_type="int8",
+            cpu_threads=1,    # Limit CPU threads
+            num_workers=1,    # Minimum workers
+            download_root="/tmp/whisper"  # Use /tmp for model storage
         )
             
-        # Transcribe with lower beam size
+        # Optimize memory usage during transcription
         segments, info = model.transcribe(
             file_path,
-            beam_size=1,  # Reduced from 5
+            beam_size=1,
             language="en",
+            vad_filter=True,          # Enable voice activity detection
+            vad_parameters=dict(
+                min_silence_duration_ms=500,
+                speech_pad_ms=100,
+            ),
             condition_on_previous_text=False,
+            initial_prompt="Convert speech to text.",
+            temperature=0.0,          # Deterministic decoding
+            compression_ratio_threshold=2.4,
+            logprob_threshold=-1.0,
             no_speech_threshold=0.6
         )
         
-        # Clean up model explicitly
-        del model
-        gc.collect()
+        # Process segments with minimal memory
+        try:
+            transcription = []
+            for segment in segments:
+                transcription.append(segment.text)
+        finally:
+            # Clean up explicitly after processing
+            del segments
         
-        # Convert segments to list for JSON serialization
-        transcription = " ".join(segment.text for segment in segments)
-        
-        # Return single JSON object with all information
+        # Create minimal result object
         result = {
             "status": "success",
-            "transcription": transcription.strip(),
-            "language": info.language,
-            "duration": info.duration
+            "transcription": " ".join(transcription).strip()
         }
         
         print(json.dumps(result), flush=True)
         
     except Exception as e:
-        error_msg = str(e).replace('"', '\\"')  # Escape quotes for JSON
-        error_result = {
+        print(json.dumps({
             "status": "error",
-            "error": f"Error processing {file_path}: {error_msg}"
-        }
-        print(json.dumps(error_result), flush=True)
+            "error": str(e)
+        }), flush=True)
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -65,6 +71,14 @@ if __name__ == "__main__":
             "error": "No audio file path provided"
         }), flush=True)
         sys.exit(1)
+    
+    # Verify file exists and is readable
+    audio_path = Path(sys.argv[1])
+    if not audio_path.is_file():
+        print(json.dumps({
+            "status": "error",
+            "error": f"File not found: {audio_path}"
+        }), flush=True)
+        sys.exit(1)
         
-    audio_file = sys.argv[1]
-    transcribe_audio(audio_file)
+    transcribe_audio(str(audio_path))
