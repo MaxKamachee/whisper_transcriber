@@ -1,7 +1,7 @@
 services:
-  # Static site is always free
-  - type: static-site
-    name: whisper-frontend
+  - name: whisper-frontend
+    type: web
+    runtime: static
     rootDir: whisper-frontend
     buildCommand: npm install && npm run build
     publishDir: build
@@ -9,11 +9,10 @@ services:
       - key: REACT_APP_API_URL
         value: https://whisper-backend.onrender.com
 
-  # Free web service
-  - type: web
-    name: whisper-backend
-    rootDir: whisper_transcriber
+  - name: whisper-backend
+    type: web
     runtime: elixir
+    rootDir: whisper_transcriber
     region: ohio
     plan: free
     buildCommand: |
@@ -29,5 +28,5 @@ services:
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: PORT
-        value: 10000
+        value: "10000"
     healthCheckPath: /health
