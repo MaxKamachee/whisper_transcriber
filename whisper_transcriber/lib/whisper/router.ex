@@ -22,8 +22,6 @@ defmodule Whisper.Router do
 
   use Plug.Router
   require Logger
-  # Add CORS support
-  plug CORSPlug, origin: ["http://localhost:3000", "https://whisper-frontend.onrender.com"]
   
   plug :match
 
@@ -117,11 +115,5 @@ defmodule Whisper.Router do
     send_resp(conn, 404, "Not found")
   end
 
-  # Override call/2 to append CORS headers on every response
-  def call(conn, opts) do
-    conn
-    |> super(opts)
-    |> Plug.Conn.put_resp_header("access-control-allow-origin", "https://whisper-frontend.onrender.com")
-    |> Plug.Conn.put_resp_header("access-control-allow-methods", "GET,POST,OPTIONS")
-  end
+  
 end

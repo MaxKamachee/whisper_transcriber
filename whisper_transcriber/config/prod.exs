@@ -1,3 +1,4 @@
+# prod.exs
 import Config
 
 config :whisper_transcriber,
@@ -10,5 +11,29 @@ config :logger,
 config :porcelain,
   driver: Porcelain.Driver.Basic
 
+# Update CORS configuration for production
 config :cors_plug,
-  origin: ["https://whisper-frontend.onrender.com"]
+  origin: ["https://whisper-frontend.onrender.com"],
+  methods: ["GET", "POST", "OPTIONS"],
+  headers: ["Content-Type", "Accept", "Origin"]
+
+# router.ex modifications
+defmodule Whisper.Router do
+  use Plug.Router
+  require Logger
+  
+  # Use CORSPlug with configuration from config
+  plug CORSPlug
+  
+  plug :match
+  plug Plug.Parsers,
+    parsers: [:multipart, :json],
+    pass: ["*/*"],
+    json_decoder: Jason,
+    length: 100_000_000
+
+  plug :dispatch
+
+  # Remove the custom call/2 function that was adding CORS headers
+  # The rest of your router code remains the same...
+end
