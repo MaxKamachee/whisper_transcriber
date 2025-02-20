@@ -7,7 +7,7 @@ services:
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://whisper-backend.onrender.com
+        value: https://whisper-backend-4x0h.onrender.com
 
   - name: whisper-backend
     type: web
