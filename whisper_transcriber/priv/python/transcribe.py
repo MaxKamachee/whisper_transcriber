@@ -17,9 +17,6 @@ def transcribe_audio(file_path):
             "tiny",
             device="cpu",
             compute_type="int8",
-            cpu_threads=1,    # Limit CPU threads
-            num_workers=1,    # Minimum workers
-            download_root="/tmp/whisper"  # Use /tmp for model storage
         )
             
         # Optimize memory usage during transcription
