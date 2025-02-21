@@ -112,18 +112,17 @@ const AudioRecorder = () => {
     }
   };
 
-  const startPolling = (path) => {
-    let attempts = 0;
+  const startPolling = (path, attempt = 0, startTime = Date.now()) => {
     const maxAttempts = 60;
-    const initialDelay = 1000;  // Start with 1 second delay
-    const maxDelay = 5000;     // Maximum 5 seconds between polls
-    let currentDelay = initialDelay;
+    const initialDelay = 1000;
+    const maxDelay = 5000;
+    let currentDelay = Math.min(initialDelay * Math.pow(1.5, attempt), maxDelay);
     
-    console.log("Starting polling for path:", path);
+    const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+    console.log(`Polling attempt ${attempt} (delay: ${currentDelay}ms) - Time elapsed: ${elapsedTime.toFixed(1)}s`);
     
-    const pollInterval = setInterval(async () => {
+    setTimeout(async () => {
       try {
-        console.log(`Polling attempt ${attempts} (delay: ${currentDelay}ms)`);
         const response = await fetch(`${API_URL}/status?path=${encodeURIComponent(path)}`, {
           credentials: 'include',
           headers: {
@@ -132,33 +131,30 @@ const AudioRecorder = () => {
         });
         
         const data = await response.json();
-        console.log("Received status:", data);
+        const currentElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`Received status at ${currentElapsed}s:`, data);
         
         if (data.status === "completed" && data.transcription) {
+          const finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`Transcription completed in ${finalTime}s`);
           setTranscription(data.transcription);
-          clearInterval(pollInterval);
         } else if (data.status === "error") {
+          const errorTime = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`Error at ${errorTime}s:`, data.error);
           setTranscription(`Error: ${data.error}`);
-          clearInterval(pollInterval);
-        } else if (attempts >= maxAttempts) {
+        } else if (attempt >= maxAttempts) {
+          const timeoutTime = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`Timeout at ${timeoutTime}s`);
           setTranscription("Timeout: Transcription took too long");
-          clearInterval(pollInterval);
         } else if (data.status === "processing") {
-          // Exponential backoff with maximum limit
-          currentDelay = Math.min(currentDelay * 1.5, maxDelay);
-          clearInterval(pollInterval);
-          setTimeout(() => startPolling(path), currentDelay);
+          startPolling(path, attempt + 1, startTime);
         }
-        
-        attempts++;
       } catch (error) {
-        console.error('Polling error:', error);
-        clearInterval(pollInterval);
+        const errorTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.error(`Polling error at ${errorTime}s:`, error);
         setTranscription("Error checking transcription status");
       }
     }, currentDelay);
-    
-    return () => clearInterval(pollInterval);
   };
 
   return (
