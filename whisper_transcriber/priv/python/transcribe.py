@@ -20,24 +20,24 @@ def transcribe_audio(file_path):
             "base",  # Use tiny model instead of base
             device="cpu",
             compute_type="int8",  # Use int8 quantization
-            cpu_threads=2,
-            num_workers=1
+            cpu_threads=4,
+            num_workers=2
         )
             
         # Transcribe with lower beam size
         segments, info = model.transcribe(
             file_path,
-            beam_size=2,         # Slightly larger beam size for better accuracy
+            beam_size=3,        # Moderate beam size for accuracy
             language="en",
-            condition_on_previous_text=True,  # Better context handling
-            temperature=0.2,      # Small temperature for minor variations
-            no_speech_threshold=0.5,  # More balanced silence detection
-            vad_filter=True,
+            initial_prompt="Transcribe the following audio accurately:",
+            condition_on_previous_text=True,  # Important for accuracy
+            temperature=0.0,    # Deterministic for speed
+            vad_filter=True,    # Use VAD for efficiency
             vad_parameters=dict(
-                min_silence_duration_ms=400,  # Balanced silence detection
-                speech_pad_ms=150,           # Better context preservation
+                min_silence_duration_ms=250,  # Shorter for speed
+                speech_pad_ms=100,           # Enough padding for accuracy
             ),
-            initial_prompt="Convert speech to text accurately."
+            word_timestamps=False  # Disable for speed
         )
         
         
