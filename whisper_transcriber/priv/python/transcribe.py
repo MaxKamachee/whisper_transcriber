@@ -17,7 +17,7 @@ def transcribe_audio(file_path):
         
         # Load the Whisper model with compute_type="int8" for lower memory usage
         model = WhisperModel(
-            "base",  # Use tiny model instead of base
+            "tiny",  # Use tiny model instead of base
             device="cpu",
             compute_type="int8",  # Use int8 quantization
             cpu_threads=4,
