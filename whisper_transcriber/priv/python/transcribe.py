@@ -17,31 +17,27 @@ def transcribe_audio(file_path):
         
         # Load the Whisper model with compute_type="int8" for lower memory usage
         model = WhisperModel(
-            "tiny",  # Use tiny model instead of base
+            "base",  # Use tiny model instead of base
             device="cpu",
             compute_type="int8",  # Use int8 quantization
-            cpu_threads=1,
+            cpu_threads=2,
             num_workers=1
         )
             
         # Transcribe with lower beam size
         segments, info = model.transcribe(
             file_path,
-            beam_size=1,
-            best_of=1,            # Don't generate multiple candidates
+            beam_size=2,         # Slightly larger beam size for better accuracy
             language="en",
-            condition_on_previous_text=False,
-            temperature=0.0,      # Deterministic, faster decoding
-            no_speech_threshold=0.7,  # More aggressive silence filtering
+            condition_on_previous_text=True,  # Better context handling
+            temperature=0.2,      # Small temperature for minor variations
+            no_speech_threshold=0.5,  # More balanced silence detection
             vad_filter=True,
             vad_parameters=dict(
-                min_silence_duration_ms=300,  # Shorter silence detection
-                speech_pad_ms=50,           # Reduced padding
+                min_silence_duration_ms=400,  # Balanced silence detection
+                speech_pad_ms=150,           # Better context preservation
             ),
-            word_timestamps=False,  # Don't generate word timestamps
-            initial_prompt="Speech to text conversion:",  # Help with context
-            compression_ratio_threshold=2.5,  # More aggressive compression
-            log_prob_threshold=-1.0          # More lenient probability threshold
+            initial_prompt="Convert speech to text accurately."
         )
         
         
