@@ -48,24 +48,10 @@ const AudioRecorder = () => {
       const formData = new FormData();
       formData.append('file', file);
       
-      // First, try a preflight request
-      try {
-        const preflightResponse = await fetch(`${API_URL}/upload`, {
-          method: 'OPTIONS',
-          headers: {
-            'Origin': window.location.origin,
-          }
-        });
-        console.log('Preflight response:', preflightResponse);
-      } catch (error) {
-        console.warn('Preflight request failed:', error);
-      }
-  
-      // Then do the actual upload
+      //do the upload
       const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
-        credentials: 'include',
         headers: {
           'Accept': 'application/json',
         },
@@ -85,7 +71,6 @@ const AudioRecorder = () => {
       // Start transcription
       const transcribeResponse = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -124,7 +109,6 @@ const AudioRecorder = () => {
     setTimeout(async () => {
       try {
         const response = await fetch(`${API_URL}/status?path=${encodeURIComponent(path)}`, {
-          credentials: 'include',
           headers: {
             'Accept': 'application/json'
           }

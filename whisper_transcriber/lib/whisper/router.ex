@@ -23,27 +23,40 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
 
-  # Define a proper OPTIONS route handler for CORS preflight requests
-  options "/upload" do
-    send_resp(conn, 200, "")
+  # Create a custom CORS plug to ensure proper headers
+  defmodule CORSHeaders do
+    import Plug.Conn
+
+    def init(opts), do: opts
+
+    def call(conn, _opts) do
+      origin = List.first(get_req_header(conn, "origin"))
+
+      headers = [
+        {"access-control-allow-origin", origin || "*"},
+        {"access-control-allow-methods", "GET, POST, PUT, DELETE, OPTIONS"},
+        {"access-control-allow-headers", "authorization, content-type, accept, origin"},
+        {"access-control-allow-credentials", "true"},
+        {"access-control-max-age", "86400"}
+      ]
+
+      # Add headers to the response
+      Enum.reduce(headers, conn, fn {header, value}, conn ->
+        put_resp_header(conn, header, value)
+      end)
+    end
   end
+
+  # Always apply our custom CORS headers first
+  plug CORSHeaders
   
-  options "/transcribe" do
-    send_resp(conn, 200, "")
+  # Explicitly handle OPTIONS requests for all routes
+  options _ do
+    conn
+    |> put_resp_header("content-length", "0")
+    |> send_resp(204, "")
+    |> halt()
   end
-  
-  options "/status" do
-    send_resp(conn, 200, "")
-  end
-  
-   # Update CORS configuration to match both frontend URLs
-  plug CORSPlug, 
-    origin: ["https://whisper-frontend.onrender.com"],
-    methods: ["GET", "POST", "OPTIONS"],
-    headers: ["Authorization", "Content-Type", "Accept", "Origin"],
-    expose: ["content-type", "content-length"],
-    credentials: true,
-    max_age: 86400
 
   plug :match
 
