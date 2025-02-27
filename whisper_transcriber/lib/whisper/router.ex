@@ -22,10 +22,23 @@ defmodule Whisper.Router do
 
   use Plug.Router
   require Logger
+
+  # Define a proper OPTIONS route handler for CORS preflight requests
+  options "/upload" do
+    send_resp(conn, 200, "")
+  end
+  
+  options "/transcribe" do
+    send_resp(conn, 200, "")
+  end
+  
+  options "/status" do
+    send_resp(conn, 200, "")
+  end
   
    # Update CORS configuration to match both frontend URLs
   plug CORSPlug, 
-    origin: ~r/.*\.onrender\.com$/,  # Match any onrender.com subdomain
+    origin: ["https://whisper-frontend.onrender.com"],
     methods: ["GET", "POST", "OPTIONS"],
     headers: ["Authorization", "Content-Type", "Accept", "Origin"],
     expose: ["content-type", "content-length"],
