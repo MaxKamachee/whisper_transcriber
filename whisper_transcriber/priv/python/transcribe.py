@@ -11,17 +11,43 @@ import gc
 # Add this to resolve the OpenMP library issue
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+def preprocess_audio(input_path):
+    """Quick preprocessing to reduce file size"""
+    import subprocess
+    import os
+    
+    output_path = input_path + ".optimized.wav"
+    
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-i", input_path,
+            "-ar", "16000", "-ac", "1", 
+            output_path
+        ], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        
+        # Return the new path if successful
+        if os.path.exists(output_path):
+            return output_path
+            
+    except Exception as e:
+        print(f"Preprocessing error: {str(e)}")
+        
+    return input_path
+
+
+    
+
 def transcribe_audio(file_path):
     try:
         
         
         # Load the Whisper model with compute_type="int8" for lower memory usage
         model = WhisperModel(
-            "tiny",  # Use tiny model instead of base
+            "tiny.en",  # Use tiny model instead of base w english as language
             device="cpu",
             compute_type="int8",  # Use int8 quantization
-            cpu_threads=4,
-            num_workers=2
+            cpu_threads=2,
+            num_workers=1
         )
             
         # Transcribe with lower beam size
@@ -74,4 +100,5 @@ if __name__ == "__main__":
         sys.exit(1)
         
     audio_file = sys.argv[1]
-    transcribe_audio(audio_file)
+    optimized_file = preprocess_audio(audio_file)
+    transcribe_audio(optimized_file)
