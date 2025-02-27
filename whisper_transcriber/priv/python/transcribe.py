@@ -27,8 +27,9 @@ def transcribe_audio(file_path):
         # Transcribe with lower beam size
         segments, info = model.transcribe(
             file_path,
-            beam_size=3,        # Moderate beam size for accuracy
+            beam_size=1,        # Moderate beam size for accuracy
             language="en",
+            best_of=1,
             initial_prompt="Transcribe the following audio accurately:",
             condition_on_previous_text=True,  # Important for accuracy
             temperature=0.0,    # Deterministic for speed
