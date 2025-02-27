@@ -23,7 +23,14 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   
-   
+   plug CORSPlug, 
+    origin: ["https://whisper-frontend.onrender.com"],
+    methods: ["GET", "POST", "OPTIONS"],
+    headers: ["Authorization", "Content-Type", "Accept", "Origin"],
+    expose: ["content-type", "content-length"],
+    credentials: true,
+    max_age: 86400
+
   plug :match
 
   # Move this BEFORE the match to ensure proper parsing
