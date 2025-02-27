@@ -21,7 +21,8 @@ def preprocess_audio(input_path):
     try:
         subprocess.run([
             "ffmpeg", "-y", "-i", input_path,
-            "-ar", "16000", "-ac", "1", 
+            "-ar", "16000",  # 16kHz is optimal for Whisper
+            "-c:a", "pcm_s16le",  # Use lossless PCM format
             output_path
         ], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         
@@ -43,7 +44,7 @@ def transcribe_audio(file_path):
         
         # Load the Whisper model with compute_type="int8" for lower memory usage
         model = WhisperModel(
-            "tiny.en",  # Use tiny model instead of base w english as language
+            "base.en",  # Use tiny model instead of base w english as language
             device="cpu",
             compute_type="int8",  # Use int8 quantization
             cpu_threads=2,
