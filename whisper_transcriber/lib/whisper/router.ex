@@ -23,8 +23,9 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   
-   plug CORSPlug, 
-    origin: ["https://whisper-frontend.onrender.com"],
+   # Update CORS configuration to match both frontend URLs
+  plug CORSPlug, 
+    origin: ~r/.*\.onrender\.com$/,  # Match any onrender.com subdomain
     methods: ["GET", "POST", "OPTIONS"],
     headers: ["Authorization", "Content-Type", "Accept", "Origin"],
     expose: ["content-type", "content-length"],

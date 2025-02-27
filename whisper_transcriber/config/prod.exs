@@ -25,8 +25,7 @@ defmodule Whisper.Router do
   use Plug.Router
   require Logger
   
-  # Use CORSPlug with configuration from config
-  plug CORSPlug
+  
   
   plug :match
   plug Plug.Parsers,
