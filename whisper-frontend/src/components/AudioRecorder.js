@@ -114,11 +114,11 @@ const AudioRecorder = () => {
 
   const startPolling = (path, attempt = 0, startTime = Date.now()) => {
     const maxAttempts = 60;
-    const initialDelay = 500;    // Start with 500ms
-    const maxDelay = 2000;       // Cap at 2 seconds instead of 5
-    let currentDelay = Math.min(initialDelay * Math.pow(1.2, attempt), maxDelay); // Slower increase (1.2 instead of 1.5)
+    const initialDelay = 1000;
+    const maxDelay = 5000;
+    let currentDelay = Math.min(initialDelay * Math.pow(1.5, attempt), maxDelay);
     
-    const elapsedTime = (Date.now() - startTime) / 1000;
+    const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
     console.log(`Polling attempt ${attempt} (delay: ${currentDelay}ms) - Time elapsed: ${elapsedTime.toFixed(1)}s`);
     
     setTimeout(async () => {
